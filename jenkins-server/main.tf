@@ -21,11 +21,11 @@ module "vpc" {
   }
 }
 
-module "web_server_sg" {
-  source = "terraform-aws-modules/security-group/aws//modules/http-80"
+module "sg" {
+  source = "terraform-aws-modules/security-group/aws"
 
-  name        = "web-server"
-  description = "Security group for web-server with HTTP ports open within VPC"
+  name        = "jenkins_sg"
+  description = "Security group for jenkins-server"
   vpc_id      = module.vpc.vpc_id
 
   ingress_with_cidr_blocks = [
@@ -54,5 +54,27 @@ module "web_server_sg" {
   ]
   tags = {
     Name = "jenkins_sg"
+  }
+}
+
+module "ec2_instance" {
+  source = "terraform-aws-modules/ec2-instance/aws"
+
+  name = "jenkins_server"
+
+  instance_type               = var.intance_type
+  key_name                    = "myKeyPair00017"
+  monitoring                  = true
+  vpc_security_group_ids      = [module.sg.security_group_id]
+  subnet_id                   = module.vpc.public_subnets[0]
+  ami                         = data.aws_ami.ubuntu_ami.id
+  user_data                   = file("jenkins-install.sh")
+  associate_public_ip_address = true
+  availability_zone           = data.aws_availability_zones.azs.names[0]
+
+  tags = {
+    Name        = "jenkins_server"
+    Terraform   = "true"
+    Environment = "dev"
   }
 }

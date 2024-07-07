@@ -5,3 +5,7 @@ variable "vpc_cidr" {
 variable "public_subnets" {
   type = list(string)
 }
+
+variable "intance_type" {
+  type = string
+}
