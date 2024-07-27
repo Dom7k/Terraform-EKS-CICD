@@ -1,3 +1,4 @@
+# VPC Module
 module "vpc" {
   source = "terraform-aws-modules/vpc/aws"
 
@@ -18,16 +19,14 @@ module "vpc" {
   public_subnet_tags = {
     "kubernetes.io/cluster/my-eks-cluster" = "shared"
     "kubernetes.io/role/elb"               = 1
-
   }
   private_subnet_tags = {
     "kubernetes.io/cluster/my-eks-cluster" = "shared"
     "kubernetes.io/role/private_elb"       = 1
-
   }
 }
 
-#EKS
+# EKS Module
 module "eks" {
   source                         = "terraform-aws-modules/eks/aws"
   cluster_name                   = "my-eks-cluster"
@@ -50,10 +49,18 @@ module "eks" {
   }
 }
 
+# Output cluster ID from the EKS module
+output "cluster_id" {
+  value = module.eks.cluster_id
+}
+
+# Ensure the data sources are dependent on the EKS cluster creation
 data "aws_eks_cluster" "cluster" {
-  name = module.eks.cluster_name
+  name       = module.eks.cluster_id
+  depends_on = [module.eks]
 }
 
 data "aws_eks_cluster_auth" "cluster" {
-  name = module.eks.cluster_name
+  name       = module.eks.cluster_id
+  depends_on = [module.eks]
 }
