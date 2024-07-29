@@ -52,3 +52,17 @@ module "eks" {
     Terraform   = "true"
   }
 }
+
+# Output cluster ID from the EKS module
+output "cluster_id" {
+  value = aws_eks_cluster.this[0].id
+}
+
+
+data "aws_eks_cluster" "cluster" {
+  name = module.eks.cluster_id
+}
+
+data "aws_eks_cluster_auth" "cluster" {
+  name = module.eks.cluster_id
+}
